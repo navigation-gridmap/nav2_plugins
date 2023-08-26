@@ -1,0 +1,5 @@
+<library path="non_planar_obstacle_layer_core">
+  <class name="non_planar_obstacle_layer/NonPlanarObstacleLayer" type="non_planar_obstacle_layer::NonPlanarObstacleLayer" base_class_type="nav2_costmap_2d::Layer">
+    <description>This plugin provides a layer that incorporate obstacles to a costmap, taking into account that the environment is not plane </description>
+  </class>
+</library>
