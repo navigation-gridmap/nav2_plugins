@@ -1,5 +1,7 @@
 # Non-Planar Obstacle Layer
 
+[![](https://img.youtube.com/vi/TiyWV8fcg3s/0.jpg)](https://www.youtube.com/watch?v=TiyWV8fcg3s&feature=youtu.be "Click to play on You Tube")
+
 This plugin uses gridmap and different perception sources to detect obstacles in a non-planar environment.
 
 Usage:
@@ -43,10 +45,10 @@ global_costmap:
 
 * `enabled` (boolean, true): If the plugin is enabled
 * `gridmap_topic` (string, "grid_map_map"): The topic of the gridmap.
-* `min_z` (double, -inf): The miniumn Z of the map elements.
-* `max_z` (double, -inf): The maxiumn Z of the map elements.
-* `min_obstacle_height` (double, 0.2): The minimun height above the surface of an obstacle.
-* `max_obstacle_height` (double, 2.0): The maximun height above the surface of an obstacle.
+* `min_z` (double, -inf): The minimum Z of the map elements.
+* `max_z` (double, -inf): The maximum Z of the map elements.
+* `min_obstacle_height` (double, 0.2): The minimum height above the surface of an obstacle.
+* `max_obstacle_height` (double, 2.0): The maximum height above the surface of an obstacle.
 * `bounds_size_x` (double, 40): This is the X size of the area to detect obstacles.
 * `bounds_size_y` (double, 40): This is the Y size of the area to detect obstacles.
 * `observation_sources` (string, ""): The perception sources to detect obstacles.
