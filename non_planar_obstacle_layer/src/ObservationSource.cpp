@@ -45,6 +45,10 @@ LaserObservationSource::insert_perception_in_pc(
     double min_x, double max_x, double min_y, double max_y, double min_z, double max_z,
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_out, double resolution)
 {
+  if (last_perception_ == nullptr) {
+    return;
+  }
+
   Eigen::Affine3d sensor2map;
   if (get_transformation("map", last_perception_->header.frame_id,
     rclcpp::Time(last_perception_->header.stamp),
@@ -63,7 +67,7 @@ LaserObservationSource::insert_perception_in_pc(
       point.z = 0.0;
 
       input_pc->push_back(point);
-    }
+   }
 
     // Reduce density
     pcl::PointCloud<pcl::PointXYZ>::Ptr reduced_pc(new pcl::PointCloud<pcl::PointXYZ>);
@@ -99,6 +103,10 @@ PointCloudObservationSource::insert_perception_in_pc(
     double min_x, double max_x, double min_y, double max_y, double min_z, double max_z,
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_out, double resolution)
 {
+  if (last_perception_ == nullptr) {
+    return;
+  }
+
   Eigen::Affine3d sensor2map;
   if (get_transformation("map", last_perception_->header.frame_id,
     rclcpp::Time(last_perception_->header.stamp),

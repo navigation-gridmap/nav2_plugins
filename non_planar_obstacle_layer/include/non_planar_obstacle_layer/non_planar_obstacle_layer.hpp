@@ -53,7 +53,11 @@ public:
   virtual bool isClearable() {return false;}
 
 private:
-  double min_local_x_, max_local_x_, min_local_y_, max_local_y_, min_z_, max_z_;
+  double min_z_, max_z_;
+
+  double last_min_x_, last_min_y_, last_max_x_, last_max_y_;
+  bool need_recalculation_;
+
   double min_obstacle_height_, max_obstacle_height_;
   double bounds_size_x_, bounds_size_y_;
 

@@ -34,7 +34,11 @@ namespace non_planar_obstacle_layer
 {
 
 NonPlanarObstacleLayer::NonPlanarObstacleLayer()
-: min_z_(-std::numeric_limits<double>::max()),
+: last_min_x_(-std::numeric_limits<float>::max()),
+  last_min_y_(-std::numeric_limits<float>::max()),
+  last_max_x_(std::numeric_limits<float>::max()),
+  last_max_y_(std::numeric_limits<float>::max()),
+  min_z_(-std::numeric_limits<double>::max()),
   max_z_(std::numeric_limits<double>::max()),
   min_obstacle_height_(0.2),
   max_obstacle_height_(2.0),
@@ -60,9 +64,7 @@ NonPlanarObstacleLayer::onInitialize()
   declareParameter("max_obstacle_height", rclcpp::ParameterValue(max_obstacle_height_));
   declareParameter("bounds_size_x", rclcpp::ParameterValue(bounds_size_x_));
   declareParameter("bounds_size_y", rclcpp::ParameterValue(bounds_size_y_));
-  declareParameter("laser_enabled", rclcpp::ParameterValue(false));
-  declareParameter("pointcloud_enabled", rclcpp::ParameterValue(false));
-  
+
   std::vector<std::string> observation_sources;
   declareParameter("observation_sources", rclcpp::ParameterValue(observation_sources));
 
@@ -117,6 +119,7 @@ NonPlanarObstacleLayer::onInitialize()
       observation_source.c_str(), observation_source_type.c_str());
   }
   current_ = true;
+  need_recalculation_ = false;
 }
 
 void
@@ -129,6 +132,7 @@ NonPlanarObstacleLayer::gridmap_callback(const grid_map_msgs::msg::GridMap::Cons
 void
 NonPlanarObstacleLayer::onFootprintChanged()
 {
+  need_recalculation_ = true;
 
   RCLCPP_DEBUG(rclcpp::get_logger(
       "nav2_costmap_2d"), "NonPlanarObstacleLayer::onFootprintChanged(): num footprint points: %lu",
@@ -140,10 +144,33 @@ NonPlanarObstacleLayer::updateBounds(
   double robot_x, double robot_y, double /*robot_yaw*/, double * min_x,
   double * min_y, double * max_x, double * max_y)
 {
-  *min_x = robot_x - bounds_size_x_ / 2.0;
-  *max_x = robot_x + bounds_size_x_ / 2.0;
-  *min_y = robot_y - bounds_size_y_ / 2.0;
-  *max_y = robot_y + bounds_size_y_ / 2.0;
+  if (need_recalculation_) {
+    last_min_x_ = *min_x;
+    last_min_y_ = *min_y;
+    last_max_x_ = *max_x;
+    last_max_y_ = *max_y;
+    // For some reason when I make these -<double>::max() it does not
+    // work with Costmap2D::worldToMapEnforceBounds(), so I'm using
+    // -<float>::max() instead.
+    *min_x = -std::numeric_limits<float>::max();
+    *min_y = -std::numeric_limits<float>::max();
+    *max_x = std::numeric_limits<float>::max();
+    *max_y = std::numeric_limits<float>::max();
+    need_recalculation_ = false;
+  } else {
+    double tmp_min_x = last_min_x_;
+    double tmp_min_y = last_min_y_;
+    double tmp_max_x = last_max_x_;
+    double tmp_max_y = last_max_y_;
+    last_min_x_ = *min_x;
+    last_min_y_ = *min_y;
+    last_max_x_ = *max_x;
+    last_max_y_ = *max_y;
+    *min_x = std::min(tmp_min_x, *min_x);
+    *min_y = std::min(tmp_min_y, *min_y);
+    *max_x = std::max(tmp_max_x, *max_x);
+    *max_y = std::max(tmp_max_y, *max_y);
+  }
 }
 
 void

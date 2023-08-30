@@ -39,6 +39,7 @@ namespace non_planar_obstacle_layer
 {
 
 using std::placeholders::_1;
+using namespace std::chrono_literals;
 
 class ObservationSourceBase {
 public:
@@ -56,10 +57,13 @@ class ObservationSource : public ObservationSourceBase
 public:
   ObservationSource(
     const std::string & plugin_name, const std::string & name, rclcpp_lifecycle::LifecycleNode::SharedPtr node)
-  : name_(name),
-    tf_buffer_(),
-    tf_listener_(tf_buffer_)
+  : name_(name)
   {
+    tf_buffer_ =
+      std::make_unique<tf2_ros::Buffer>(node->get_clock());
+    tf_listener_ =
+      std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+
     std::string topic;
     if (!node->has_parameter(plugin_name + "." + name + ".topic")) {
       node->declare_parameter(plugin_name + "." + name + ".topic", "/perception");
@@ -85,13 +89,14 @@ public:
   }
 
   bool get_transformation(
-    const std::string & target_frame, const std::string & source_frame,
+    const std::string & target_frame, std::string source_frame,
     const rclcpp::Time & time, Eigen::Affine3d & transform)
   {
     try {
       geometry_msgs::msg::TransformStamped sensor2map;
-      sensor2map = tf_buffer_.lookupTransform(
-        target_frame, source_frame, tf2::TimePointZero); //  tf2_ros::fromRclcpp(time));    
+      sensor2map = tf_buffer_->lookupTransform(
+        target_frame, source_frame, tf2_ros::fromRclcpp(time),
+        tf2::Duration(200ms));
       
       transform = tf2::transformToEigen(sensor2map);
 
@@ -108,8 +113,8 @@ protected:
   const std::string name_;
   typename rclcpp::Subscription<T>::SharedPtr percept_sub_;
 
-  tf2::BufferCore tf_buffer_;
-  tf2_ros::TransformListener tf_listener_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
   void perception_callback(typename T::UniquePtr msg) {
     last_perception_ = std::move(msg);
